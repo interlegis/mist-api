@@ -12,9 +12,9 @@ from datetime import datetime
 
 parser = argparse.ArgumentParser(description="""Get statistics from Mistserver,
                                                 usage: python mist_logger.py \
-                                                --host 10.1.10.212 \
-                                                --user teste \
-                                                --pwd teste
+                                                --host IP_address \
+                                                --user admin_username \
+                                                --pwd admin_password
                                              """)
 parser.add_argument('--host', required=True, help='Mistserver IP address')
 parser.add_argument('--port', required=False, help='Mistserver port address')
@@ -70,22 +70,22 @@ def execute_cmd(username, password, command=''):
         CHALLENGE = get_challenge(username)
 
     # send request
-    hashed_pwd = hash_password(PASSWORD, CHALLENGE)
-    resp = send_request(USERNAME, hashed_pwd, command)
+    hashed_pwd = hash_password(password, CHALLENGE)
+    resp = send_request(username, hashed_pwd, command)
 
     # CHALLENGE probably expired
     # get new challenge, re-hash password and send request again
     if resp["authorize"]["status"] == "CHALL":
         CHALLENGE = resp["authorize"]["challenge"]
-        hashed_pwd = hash_password(PASSWORD, CHALLENGE)
-        resp = send_request(USERNAME, hashed_pwd, command)
+        hashed_pwd = hash_password(password, CHALLENGE)
+        resp = send_request(username, hashed_pwd, command)
     return resp
 
 
-def record_clients(output_file, sample_interval_s=20):
+def record_clients(output_file, username, password, sample_interval_s=20):
     with open(output_file, 'w') as c:
         while True:
-            dic = execute_cmd(USERNAME, PASSWORD, CLIENTS)
+            dic = execute_cmd(username, password, CLIENTS)
             header = dic["clients"]["fields"]
             data = dic["clients"]["data"]
             curr_time = dic["clients"]["time"]
@@ -110,4 +110,4 @@ def record_clients(output_file, sample_interval_s=20):
 
 if __name__ == "__main__":
     output_file = 'mistserver-' + time.strftime('%y-%m-%d-%H-%M') + '.csv'
-    record_clients(output_file)
+    record_clients(output_file, USERNAME, PASSWORD)
