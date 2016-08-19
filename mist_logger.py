@@ -82,7 +82,7 @@ def execute_cmd(username, password, command=''):
     return resp
 
 
-def record_clients(output_file, sample_interval_s=30):
+def record_clients(output_file, sample_interval_s=20):
     with open(output_file, 'w') as c:
         while True:
             dic = execute_cmd(USERNAME, PASSWORD, CLIENTS)
